@@ -10,5 +10,6 @@ const dbConnection = () => {
       console.log(`Database Connection failed ${err}`);
       process.exit(1);
     });
+    
 };
 module.exports = dbConnection;
