@@ -4,10 +4,10 @@ const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const User = require("../../models/userModel");
 
 exports.signupValidator = [
-  check("name")
+  check("username")
     .custom((name, { req }) => (req.body.slug = slugify(name)))
     .notEmpty()
-    .withMessage("User Required")
+    .withMessage("username Required")
     .isLength({ min: 3 })
     .withMessage("Too short user name"),
 
@@ -27,15 +27,15 @@ exports.signupValidator = [
   check("password")
     .notEmpty()
     .withMessage("Password Required")
-    .isLength({ min: 6 })
+    .isLength({ min: 8 })
     .withMessage("Too short password"),
 
   check("confirmPassword")
     .notEmpty()
-    .withMessage("confirmPassword required")
+    .withMessage("confirm Password required")
     .custom((val, { req }) => {
       if (val != req.body.password) {
-        throw new Error("passwordConfirmation not match password");
+        throw new Error("password Confirmation not match password");
       }
       return true;
     }),
@@ -51,7 +51,7 @@ exports.loginValidator = [
   check("password")
     .notEmpty()
     .withMessage("Password required")
-    .isLength({ min: 6 })
+    .isLength({ min: 8 })
     .withMessage("Too short password"),
   validatorMiddleware,
 ];
@@ -84,7 +84,7 @@ exports.resetPasswordValidator = [
   check("newPassword")
     .notEmpty()
     .withMessage("new Password required")
-    .isLength({ min: 6 })
+    .isLength({ min: 8 })
     .withMessage("Too short password"),
   validatorMiddleware,
 ];

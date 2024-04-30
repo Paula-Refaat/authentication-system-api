@@ -25,6 +25,9 @@ if (process.env.NODE_ENV === "development") {
 //Mount Routes
 app.use("/api/v1/auth", authRoute);
 
+// Initialize Passport
+app.use(passport.initialize());
+
 // Handel unhandelling Routes
 app.all("*", (req, res, next) => {
   next(new ApiError(`Can't found this Route : ${req.originalUrl}`, 400));

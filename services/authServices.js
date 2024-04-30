@@ -1,6 +1,9 @@
 const crypto = require("crypto");
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
+const passport = require("passport");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const FacebookStrategy = require("passport-facebook").Strategy; // Import FacebookStrategy
 
 const ApiError = require("../utils/ApiError");
 const UserAuthorization = require("../utils/UserAuthorization");
@@ -9,13 +12,124 @@ const createToken = require("../utils/createToken");
 
 const User = require("../models/userModel");
 
+// @desc    User Register,login with Google
+// @route   POST /api/v1/auth/google
+// @access  Public
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL,
+      passReqToCallback: true,
+    },
+    asyncHandler(async (req, accessToken, refreshToken, profile, done) => {
+      // Find a user by google.id or email in the database
+      let existingUser = await User.findOne({
+        $or: [{ "google.id": profile.id }, { email: profile.emails[0].value }],
+      });
+
+      console.log("profile", profile);
+
+      if (existingUser) {
+        // Check if the user has logged in with Google before
+        if (!existingUser.google || !existingUser.google.id) {
+          // The user exists by email but hasn't logged in with Google before, so update the record
+          await User.updateOne(
+            { _id: existingUser._id }, // filter
+            {
+              // update
+              $set: {
+                "google.id": profile.id,
+                "google.email": profile.emails[0].value,
+                isOAuthUser: true,
+              },
+            }
+          );
+          // After update, it's a good idea to refresh the existingUser object if you plan to use it right after
+          existingUser = await User.findById(existingUser._id);
+        }
+        // Generate a JWT for the (possibly updated) existing user
+        const token = createToken(existingUser._id);
+        return done(null, { user: existingUser, token }); // Include token in the user object
+      }
+      // No user exists by Google ID or email, create a new user
+      const newUser = await User.create({
+        username: profile.displayName,
+        email: profile.emails[0].value,
+        google: {
+          id: profile.id,
+          email: profile.emails[0].value,
+        },
+        isOAuthUser: true,
+      });
+      const token = createToken(newUser._id);
+      done(null, { user: newUser, token }); // Include token in the user object
+    })
+  )
+);
+
+// @desc    User Register,login with facebook
+// @route   POST /api/v1/auth/facebook
+// @access  Public
+passport.use(
+  new FacebookStrategy(
+    {
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: process.env.FACEBOOK_CALLBACK_URL,
+      profileFields: ["id", "displayName", "emails"],
+      passReqToCallback: true,
+    },
+    asyncHandler(async (req, accessToken, refreshToken, profile, done) => {
+      // Facebook authentication logic
+      let existingUser = await User.findOne({
+        $or: [
+          { "facebook.id": profile.id },
+          { email: profile.emails[0].value },
+        ],
+      });
+
+      if (existingUser) {
+        if (!existingUser.facebook || !existingUser.facebook.id) {
+          await User.updateOne(
+            { _id: existingUser._id },
+            {
+              $set: {
+                "facebook.id": profile.id,
+                "facebook.email": profile.emails[0].value,
+                isOAuthUser: true,
+              },
+            }
+          );
+          existingUser = await User.findById(existingUser._id);
+        }
+        const token = createToken(existingUser._id);
+        return done(null, { user: existingUser, token });
+      }
+
+      const newUser = await User.create({
+        username: profile.displayName,
+        email: profile.emails[0].value,
+        facebook: {
+          id: profile.id,
+          email: profile.emails[0].value,
+        },
+        isOAuthUser: true,
+      });
+      const token = createToken(newUser._id);
+      done(null, { user: newUser, token });
+    })
+  )
+);
+
 // @desc    User Register
 // @route   POST /api/v1/auth/signup
 // @access  Public
 exports.signup = asyncHandler(async (req, res, next) => {
   // 1- create user
   const user = await User.create({
-    name: req.body.name,
+    username: req.body.username,
     email: req.body.email,
     password: req.body.password,
   });
@@ -29,7 +143,9 @@ exports.signup = asyncHandler(async (req, res, next) => {
 // @access  Public
 exports.login = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
-
+  if (!user.password) {
+    return next(new ApiError("incorrect password or email", 401));
+  }
   if (!user || !bcrypt.compareSync(req.body.password, user.password)) {
     return next(new ApiError("Incorrect email or password", 401));
   }
@@ -92,11 +208,11 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
   await user.save();
 
-  const message = `Hi ${user.name},
+  const message = `Hi ${user.username},
    \n We received a request to reset the passwrd on your E-shop Account .
     \n ${resetCode} \n Enter this code to complete the reset.
     \n Thanks for helping us keep your account secure.
-     \n  the E-shop Team`;
+     \n  the E-webstite Team`;
 
   // 3-Send reset code via email
   try {
