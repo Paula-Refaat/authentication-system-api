@@ -1,5 +1,5 @@
 //GLobal error handling middleware
-const ApiError = require("../utils/apiError");
+const ApiError = require("../utils/ApiError");
 
 //when i pass 4 parameters express will understands that error handling middleware
 const sendErrorForDev = (err, res) => {
