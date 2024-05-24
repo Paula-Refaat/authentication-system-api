@@ -17,6 +17,9 @@ const app = express();
 
 app.use(express.json());
 
+// Trust the proxy
+app.set('trust proxy', true);
+
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
   console.log(`mode: ${process.env.NODE_ENV}`);
