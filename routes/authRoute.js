@@ -37,6 +37,9 @@ const forgotPasswordLimiter = rateLimit({
 
 const router = express.Router();
 
+// Trust the proxy
+router.set('trust proxy', true);
+
 // Route to start the Google authentication process
 router.get(
   "/google",
