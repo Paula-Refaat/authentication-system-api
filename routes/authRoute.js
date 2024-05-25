@@ -18,20 +18,18 @@ const {
   resetPasswordValidator,
 } = require("../utils/validators/authValidator");
 
-// Import Facebook authentication strategy
-const FacebookStrategy = require("passport-facebook").Strategy;
 
 // Create a limiter for login requests
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 login requests per windowMs
+  max: 10, // limit each IP to 5 login requests per windowMs
   message: "Too many login attempts. Please try again later.",
 });
 
 // Create a limiter for forgot password requests
 const forgotPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 3, // limit each IP to 3 forgot password requests per windowMs
+  max: 10, // limit each IP to 3 forgot password requests per windowMs
   message: "Too many forgot password attempts. Please try again later.",
 });
 
