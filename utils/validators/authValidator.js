@@ -2,6 +2,7 @@ const { check } = require("express-validator");
 const slugify = require("slugify");
 const validatorMiddleware = require("../../middlewares/validatorMiddleware");
 const User = require("../../models/userModel");
+const verifyEmailWithMailboxlayer = require("../verifyEmail");
 
 exports.signupValidator = [
   check("username")
@@ -18,9 +19,15 @@ exports.signupValidator = [
     .withMessage("invalid email address")
     .toLowerCase()
     .custom((val) =>
-      User.findOne({ email: val }).then((email) => {
-        if (email) {
-          throw new Error("E-mail already exists");
+      verifyEmailWithMailboxlayer(val).then((isValid) => {
+        if (isValid) {
+          User.findOne({ email: val }).then((email) => {
+            if (email) {
+              throw new Error("E-mail already exists");
+            }
+          });
+        } else {
+          throw new Error("Email is invalid or does not real email address");
         }
       })
     ),
