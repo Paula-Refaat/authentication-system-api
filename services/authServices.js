@@ -209,10 +209,10 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   const message = `Hi ${user.username},
-   \n We received a request to reset the passwrd on your E-shop Account .
+   \n We received a request to reset the passwrd on your Flare Account .
     \n ${resetCode} \n Enter this code to complete the reset.
     \n Thanks for helping us keep your account secure.
-     \n  the E-webstite Team`;
+     \n  the Flare Team`;
 
   // 3-Send reset code via email
   try {

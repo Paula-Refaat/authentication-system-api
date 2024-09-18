@@ -18,19 +18,13 @@ exports.signupValidator = [
     .isEmail()
     .withMessage("invalid email address")
     .toLowerCase()
-    .custom((val) =>
-      verifyEmailWithMailboxlayer(val).then((isValid) => {
-        if (isValid) {
-          User.findOne({ email: val }).then((email) => {
-            if (email) {
-              throw new Error("E-mail already exists");
-            }
-          });
-        } else {
-          throw new Error("Email is invalid or does not real email address");
+    .custom((val) => 
+      User.findOne({ email: val }).then((email) => {
+        if (email) {
+          throw new Error("E-mail already exists");
         }
-      })
-    ),
+    })
+  ),
   check("password")
     .notEmpty()
     .withMessage("Password Required")
