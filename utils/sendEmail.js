@@ -10,10 +10,16 @@ const sendEmail = async (options) => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    sender: {
+      name: process.env.EMAIL_FROM, // Custom sender name
+    },
   });
 
   const mailOptions = {
-    from: `<${process.env.EMAIL_USER}>`,
+    from: {
+      name: process.env.EMAIL_FROM, // Custom sender name
+      address: process.env.EMAIL_USER, // Actual sender email address
+    },
     to: options.email,
     subject: options.subject,
     text: options.message,
