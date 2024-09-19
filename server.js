@@ -3,6 +3,7 @@ const morgan = require("morgan");
 const dotenv = require("dotenv");
 const passport = require("passport");
 const multer = require("multer"); // Import multer
+const cors = require("cors");
 
 dotenv.config({ path: "config.env" });
 
@@ -17,6 +18,15 @@ dbConnection();
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
+//enable other domains access your application
+app.use(
+  cors({
+    origin: true, // dynamically set the origin based on request origin
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
 
 if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
