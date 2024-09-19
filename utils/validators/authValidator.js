@@ -87,5 +87,14 @@ exports.resetPasswordValidator = [
     .withMessage("new Password required")
     .isLength({ min: 8 })
     .withMessage("Too short password"),
+    check("newPasswordConfirm")
+    .notEmpty()
+    .withMessage("new confirm Password required")
+    .custom((val, { req }) => {
+      if (val != req.body.newPassword) {
+        throw new Error("new password confirm not match new password");
+      }
+      return true;
+    }),
   validatorMiddleware,
 ];

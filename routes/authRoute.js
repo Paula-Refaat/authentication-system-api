@@ -95,6 +95,6 @@ router.post(
   verifyPassResetCodeValidator,
   verifyPassResetCode
 );
-router.put("/resetPassword", resetPasswordValidator, resetPassword);
+router.post("/resetPassword", resetPasswordValidator, resetPassword);
 
 module.exports = router;
