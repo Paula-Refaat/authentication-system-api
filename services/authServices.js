@@ -132,7 +132,6 @@ exports.signup = asyncHandler(async (req, res, next) => {
     username: req.body.username,
     email: req.body.email,
     password: req.body.password,
-    phone: req.body.phone,
   });
   // 2- Creat token
   const token = createToken(user._id);
@@ -210,10 +209,10 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   await user.save();
 
   const message = `Hi ${user.username},
-   \n We received a request to reset the passwrd on your Flare Account .
+   \n We received a request to reset the passwrd on your E-shop Account .
     \n ${resetCode} \n Enter this code to complete the reset.
     \n Thanks for helping us keep your account secure.
-     \n  the Flare Team`;
+     \n  the E-webstite Team`;
 
   // 3-Send reset code via email
   try {

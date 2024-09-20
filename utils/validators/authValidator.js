@@ -18,13 +18,19 @@ exports.signupValidator = [
     .isEmail()
     .withMessage("invalid email address")
     .toLowerCase()
-    .custom((val) => 
-      User.findOne({ email: val }).then((email) => {
-        if (email) {
-          throw new Error("E-mail already exists");
+    .custom((val) =>
+      verifyEmailWithMailboxlayer(val).then((isValid) => {
+        if (isValid) {
+          User.findOne({ email: val }).then((email) => {
+            if (email) {
+              throw new Error("E-mail already exists");
+            }
+          });
+        } else {
+          throw new Error("Email is invalid or does not real email address");
         }
-    })
-  ),
+      })
+    ),
   check("password")
     .notEmpty()
     .withMessage("Password Required")
@@ -87,14 +93,5 @@ exports.resetPasswordValidator = [
     .withMessage("new Password required")
     .isLength({ min: 8 })
     .withMessage("Too short password"),
-    check("newPasswordConfirm")
-    .notEmpty()
-    .withMessage("new confirm Password required")
-    .custom((val, { req }) => {
-      if (val != req.body.newPassword) {
-        throw new Error("new password confirm not match new password");
-      }
-      return true;
-    }),
   validatorMiddleware,
 ];
